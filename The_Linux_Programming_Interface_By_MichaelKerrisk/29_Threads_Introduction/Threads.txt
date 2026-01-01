@@ -1,0 +1,46 @@
+POSIX Threads (Pthreads)
+__________________________________________________________________
+
+#include <pthread.h>
+
+// Thread creation
+int phthread_create(pthread_t *thread, const pthread_attr_t *attr, 
+            void*(*start)(void*), void *arg);
+
+    // Returns 0 on success, or a positive error number on error
+
+// Thread termination
+void pthread_exit(void* retval);
+
+pthread_t pthread_self(void);
+    // Returns thread ID of calling thread
+
+int pthread_equal(pthread_t t1, pthread_t t2);
+    // returns nonzero value if t1 and t2 are equal, otherwise 0
+
+int pthread_join(pthread_t thread, void** retval);
+    // Returns 0 on success, or a positive number on error
+
+int pthread_detach(pthread_t thread);
+    // Returns 0 on success, or a positive number on error
+
+___________________________________________________________________
+
+Thread versus Processes
+Advantages of thread:
+    - Sharing data between thread is easy. By contrast, sharing data between
+    processes requires more work.
+    - Thread creation is faster than process creation. context-switch time
+    may be lower for threads than for processes.
+Disadvantage of thread:
+    - When programming with thread, we need to esure that the functions we
+    called are thread-safe manner.
+    - A bug in one thread can damage all of the threads in the process, since
+    they share the same address space and other attributes. In contrast, processes
+    are more isolated from one another.
+
+    - Dealing with signals in multihtreaded application requires careful design.
+    It is usually desirable to avvoid signals in multihtreaded program.
+    - In a multithreaded application, all threads must be running the same
+    program. In multiprocesses application, different processes can run different
+    programs.
