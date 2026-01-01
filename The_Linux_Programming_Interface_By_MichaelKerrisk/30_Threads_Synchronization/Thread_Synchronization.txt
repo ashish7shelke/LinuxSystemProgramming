@@ -73,4 +73,30 @@ ________________________________________________________________________________
 
 Signaling changes of state: Condition Variables
 
+A mutex prevents multiple threads from accessing a shared variable at the same time.
+A condition variable allows on ethread to inform other threads about changes in the state of shared variable,
+and allows other threads to wait (block) for such notifications.
+Condition variable allows thread to sleep until another thread notifies for state change.
+
+A condition variable is always used in conjunction with a mutex. The mutex provides mutual exclusion
+for accessing shared variable, while condition variable is used to signal changes in tvariable state.
+
+pthread_condition_t cond = PTHRAED_COND_INITIALIZER;
+
+Signaling and waiting on Condition varialbe:
+
+int pthread_cond_signal(pthread_cond_t *cond); --> Atleast one blocked thread is woken up
+int pthread_cond_broadcast(pthread_cond_t *cond); --> All blocked threads are woken up
+int pthread_cond_wait(pthread_cond_t *cond, pthreaad_t *mtx);
+        // Returns 0 on success, or a positive error number on error
+
+int pthread_cond_timedwait(pthread_cond_t* cond, pthread_mutex_t *mtx, const struct timespec *abstime);
+
+pthread_cond_wait() -->
+1)  Unlocks the mutex specified by mutex.
+2)  Block the calling thread until another thread signals the condition variable cond
+3)  Relock the mutex.
+
+Tesing a condition variable's Predicate:
+    each condition variable has an associated predicate involving one or more shared variable.
 
