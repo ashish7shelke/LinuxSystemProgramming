@@ -1,0 +1,47 @@
+UNIX domain sockets, allows communication between processes on the same host system.
+
+UNIX domain socket Addresses: struct socketaddr_un
+
+struct sockaddr_un {
+    sa_family_t sun_family; /*Always AF_UNIX*/
+    char sun_path[108]; /*Null-terminated socket pathname*/
+};
+
+
+Binding UNIX domain socket:
+___________________________
+const char *SOSKNAME = "/tmp/mysock";
+int sfd;
+struct sockaddr_un addr;
+
+sfd = socket(AF_UNIX, SOCK_STREAM, 0);
+if(sfd == -1)
+    errExit("SOCKET");
+
+memset(&addr, 0, sizeof(struct sockaddr_un));   // Clear structure
+addr.sun_family = AF_UNIX;                      // UNIX Domain address
+strcpy(addr.sun_path, SOCKNAME, sizeof(addr.sun_path)-1); // To ensure this fiels alswys terminates /0
+
+if(bind(sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un)) == -1)
+    errExit("bind");
+
+bind() creates an entry in file system. Directory specified as part of the socket pathname needs to be 
+accessible and writable.
+Ownership of file is determined according to usual rules of file creation.
+The file is marked as socket.
+
+slat() returns S_IFSOCK in file-type component of st_mode field of st structure.
+
+Although UNIX domain sockets are identified by pathnames, I/O on these sockets doesn't involve operations on
+the underlying device.
+
+Binding UNIX domain socket:
+1)  We can't bind socket to an existing pathname -> error EADDRINUSE
+2)  If usual to bind a socket to an absolute pathname, so that socket resides at a fixed 
+address in the file system. 
+Using relative pathname is possible, but unusual, because it requires an application that wants to connect()
+to this socket to know the current working directory of applciaiton that performs bind().
+3)  A socket may be bound to only on epathname: conversly a pathname can be bound to only one socket.
+4)  We can't use open() to open socket
+5)  What the socket is no longer required, its pathname entry can be removed using unlink()
+
