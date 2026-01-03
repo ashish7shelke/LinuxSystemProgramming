@@ -1,0 +1,185 @@
+Computer networking concepts
+
+TCP/IP networking protocol
+
+Request for comments (RFC)
+
+Internets:
+__________
+
+internetwork - internet - connects different computer networks to communicate with one another.
+Internet is network of computer networks
+subnetwork or subnet - one of the network composing an internet
+
+An internet aims to hide the details of different physical networks in order to present network architecture
+to all hosts on the connected networks. e.g. single address format is used to identify all hosts in the
+internet.
+
+TCP/IP - The term Interner (with uppercase I) is used to refer to TCP/IP internet that connects milions of
+computers globally.
+
+Router: A computer whose function is to connect one subnetwork to another, transferring data between them.
+A router must understand the (possibly) different data-link-layer protocols used on each of the subnets.
+
+Router is multihomed host that forwards packets from one subnet to another.
+
+A networking Protocols and Layers:
+__________________________________
+
+A networking protocol: is set of rules defining how information is to be transmitted across network.
+
+Networking protocols are generally organized as a series of layers, with each layer binding in the layer
+below it to add features that are mnade available to higher layers.
+
+TCP/IP protocol is layered networking protocol, it includes Internet Protocol (IP) and various layers above.
+these layers are commonly referred as protocol layers.
+
+Transmission Control Protocol (TCP)
+
+                |
+USER SPACE      |   Application Layer
+                |   Applications
+
+                |
+                |   Transport Layer (UDP / TCP)
+KERNEL SPACE    |
+                |
+                |   Network Layer (IP)
+                |
+
+                |
+Hardware        |   Data-Link Layer
+                |   Network Interface Hardware
+
+Great power and flexibility of protocol layering is transperency each protocol layer shields higher
+layers from the operations and complexity of lower layers.
+Example, An application making use of TCP only needs to use the standard sockets API and to know that it is
+employing reliable byte-stream transport service. It doesn't need to understand the details of TCP protocol.
+
+Encapsulation: Important principle of layered networking protocol. Information passed from a higher layer to 
+a lower layer is treated as opaque data by lower layer.
+In other words, lower layer makes no attempt to interpret informatio sent from the upper layer, but marely
+places that information insode whatever type of packet is used in the lower layer and adds its own layer
+specific header before passing the packet down to next lower layer.
+When data is passed up from a lower layer to higher layer, a converse unpacking takes places.
+
+The Data-Link Layer:
+____________________
+This layer consists of device driver and hardware interface (network card) to the underlying physical medium.
+(telephone line, coaxial cable, fiber-optic cable)
+
+Data-link layer is concerned with transferring data across a physical link in a network.
+
+Data-link layer encapsulates datagrams from the network layer into units called frames.
+Each frame includes a header containing, destination address and frame size.
+
+The data-link layer transmits the frames across the physical link and handles acknowledgements from the 
+receiver. This layer performs error detection, retransmission, and flow control.
+Some data link layers also split large network packets into multiple frames and resembles them at the 
+receiver.
+
+From application programming point of view, we can generally ignore the data link layer, since all 
+communication details are handled in the driver and hardware.
+One characterstic of dta-link layer important for IP is maximum transmission unit(MTU). MTU is upper limit
+that layer places on the size of a frame. Different data-link layers have different MTUs.
+
+The Network Layer: IP
+_____________________
+IP is concerned with delivering packets (data) from the source host to the destination host.
+-   Breaking dat ainto fragments small enough for tranmission via the data-link layer
+-   Routing data across the internet
+-   Providing services to the transport layer
+
+IPv4 -> IPv4 identifies subnets and hosts using 32-bit address.
+IPv4 -> IPv6 used 128 bit address
+
+SOCK_RAW socket type allows an application to communicate directly with IP layer.
+
+IP trasnmits datagram:
+    IP transmits data in the form of datagrams (packets). EAch datagram sent between two hosts travels
+    independently across the network, possibly taking different route.
+    An IP datagram includes a header (20 to 60bytes).
+    Header contains address of target host, so that datagram can be routed through network to its destinations,
+    also includes address of the packet so that receiving host knows origin of the datagram.
+
+    IP implementation may place an upper limit on the size of datagram that it supports. IP implementation
+    must permit datagrams at least as large as the lmit specified by IP's minimum ressembly buffer size.
+    In IPv4 this limit is 576 bytes and IPv6 is 1500 bytes.
+
+IP is connectionless and unreliable:
+    IP is described as connectionless, since it doesn't provide the notion of a virtual circuit connecting
+    two hosts. IP doesn't guarantee that packets will arrive in the order they were transmitted or even arrive
+    IP doesn't provide error recovery, packets with headers errors are silently discarded.
+    Reliability must be provided either by using a reliable TCP or within applicaiton itself.
+
+IP may fragment datagrams:
+    IPv4 datgrams can be up to 65535 bytes. Ipv6 allows 65575 bytes.
+    Dta-link layer MTU limits size of dataframes. 
+    When IP datagram is larger than MTU, IP fragments the datagram into suitable sized units of transmission
+    across network. These fragments are then reassembled at the final destination to recreate original datagram.
+    As IP transmission is not reliable, some fragments may losts, so entire reassembly fails.
+    Modern TCP emply algorithm to determine the MTU of a path between hosts, and break up data that is pass to IP.
+
+
+IP Address:
+___________
+
+Ipv4 address: 
+                      ------------32 bits---------
+    Network Address: |  Network Id      | Host Id |
+                      ----------------------------
+    Network mask:    |  all 1s          | all 0s  |
+                      ----------------------------
+
+
+Host ID = 0     -> Network itself
+Host ID = 255   -> subnet braodcast address
+
+local host : 127.0.0.1 --> loopback address --> to client server application on same host machine
+            It loop backs trasnmitted packet --> In C - INADDR_LOOPBACK
+
+wildcard address: 0.0.0.0 --> The wildcard IP address is useful for applications that bind Internet domain
+    sockets on multihomed hosts. --> In C - INADDR_ANY
+
+Typically IPv4 addresses are subnetted, Subnetting devices the Host ID part of an IPv4 address into 
+two parts: subnet ID & host ID.
+                     ------------32 bits---------
+    Network Address: |  Network Id      | Subnet ID |Host Id |
+                      ---------------------------------------
+    Network mask:    |  all 1s                      | all 0s |
+                      ---------------------------------------
+
+Ipv6 address: 
+                      ------------128 bits---------------------------
+    Network Address: |  all zeros      |     FFFF     | IPv4 address |
+                      -----80bits----------16 bits-------------------
+
+    IPv4 mapped IPv6 address
+
+The Transport Layer:
+____________________
+
+    User Datagram Protocol (UDP)            --> Datagram socket
+    Transmission Control Protocol (TCP)     --> Stram socket
+
+    Port Numbers:
+    The task of transport protocol is to provide an end-to-end communication service to applications
+    residing on different hosts.
+    TRansport layer requires a method of differentiating the application on a host.
+    In TCP and UDP, the differentiation is provided by a 16-bit port.
+
+Well-known, registred and privileged ports:
+    well-known port numbers are permanently assigned to specific applicatiion (known as service).
+    ssh deamon uses the well-known port 22,
+    HTTP used the well-known port 80,
+    IANA - Internet Assigned Numbers Authority - Assignes well-known port number.
+    0 - 1023 port numbers are well-known ports.
+
+
+User Datagram Protocol (UDP):
+__________________________________
+
+
+
+
+

@@ -82,6 +82,3 @@ Bind UNIX domain socket to a name without being created in the file system.
 To create an abstract binding, we specify the first byte of sun_path deild as null byte.
 
 Initial null byte is used to distinguish an abstract socket name.
-
-
-
