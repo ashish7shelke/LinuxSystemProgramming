@@ -45,3 +45,43 @@ to this socket to know the current working directory of applciaiton that perform
 4)  We can't use open() to open socket
 5)  What the socket is no longer required, its pathname entry can be removed using unlink()
 
+
+Unix domain socket permission:
+To connect Unix domain stream socket, write permission is required on the socket file.
+To send datagram to UNIX domain datagram socket, write permission is required on socket file.
+
+Execute(search) permission is required on each of directories in the socket pathname.
+
+
+Creating a connected socket pair: socketpair()
+Sometime it is useful a single process to create a pair of sockets and connect then together.
+
+1) [socket() and bind()] 
+2) [listen(), connect() and accept()] 
+socketpair() provides shorthand to all these operations
+
+int socketpair(int domain, int type, int protocol, int sockfd[2]);
+    // Returns 0 on success or -1 on error
+
+After socketpair() is called, process then create child via fork(), the child inherits copies of 
+parent's fds including socket fds. The parent and child can use socket pair for IPC.
+Sockets created from this are not attached with any address, so not visible to any other process.
+
+The linux abstract socket namespace:
+Bind UNIX domain socket to a name without being created in the file system.
+
+    We don't need to worry about possible collisionswith existing names in the file system.
+
+    It is not necessary to unlink the socket pathname when we have unfinished using the socket. The
+    abstract name is automatically removed when socket is closed.
+
+    We don't need to create a file-system pathname for the socket. It is useful in chroot environment or
+    we don't ahve file access.
+
+
+To create an abstract binding, we specify the first byte of sun_path deild as null byte.
+
+Initial null byte is used to distinguish an abstract socket name.
+
+
+
