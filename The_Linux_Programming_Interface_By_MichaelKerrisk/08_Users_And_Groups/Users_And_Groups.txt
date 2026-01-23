@@ -1,0 +1,102 @@
+Every user has a unique login name and an assocciated numeric user identifier (UID).
+
+Users can belong to onr or more groups. Each group has a unique name and a group identifier (GID).
+
+The purpose of user and group IDs is to determine ownershop of various system resource and
+to control permissions to access resources.
+
+*The Password File /etc/passwd *
+---------------------------------
+This file contain each line for one user
+user_name:x:1000:1000:user_name:/home/user_name:/bin/bash
+
+Login name
+Encrypted password: x is noted in passwd file and, actual password string stored in shadow password file
+Ust ID (uid):
+Group ID (gid):
+Home Directory:
+Login Shell: Once user logged in, control transferred to login_shell program.
+
+*The Shadow password file: /etc/shadow*
+--------------------------------------
+The nonsensetive information is stored in /etc/passwd file.
+The encrypted password stored in shadow file.
+
+*The Group file: /etc/group*
+-----------------------------
+
+root:x:0:
+gdm:x:121:
+nm-openvpn:x:122:
+lxd:x:123:
+gamemode:x:986:
+gnome-initial-setup:x:985:
+ashish:x:1000:
+nvidia-persistenced:x:124:
+
+Group name:
+Encrypted pasword:
+Group Id(GID):
+User List:
+
+*Retrieving User and Group Information*
+---------------------------------------
+#include <pwd.h>
+struct passwd* getpwnam(const char* name); // Returns pointer on succes sor NULL on error
+struct passwd* getpwuid(uid_t uid); // Returns pointer on succes sor NULL on error
+
+struct passwd{
+   char* pw_name;    // login name (username)
+   char* pw_passwd;  // Encrypted passwd
+   uid_t pw_uid;     // User ID
+   gid_t pw_gid;     // Group ID
+   char* pw_gecos;   // Comment
+   char* pw_dir;     // Initial working Directory
+   char* pw_shell;   // Login shell
+};
+
+#include <grp.h>
+struct group* getgrnam(const char* name);
+struct group* getgrgid(gid_t gid);
+
+struct group{
+   char* gr_name;    // Group name
+   char *gr_passwd;  // Encrypted password
+   gid_t gr_gid;     // Group ID
+   char** gr_mem;    // Null terminated array of pointer to names of members in /etc/group
+};
+
+*scanning all records in the password and group files*
+------------------------------------------------------
+
+#include <pwd.h>
+struct passwd* getpwent(void);   // Returns pointer on success or NULL onf end of stream or error
+void endpwent(void);   // Returns pointer on success or NULL onf end of stream or error
+
+endpwent() call is needed after getpwent() call to close resource related passwd file.
+
+#include <shadow.h>
+struct spwd* getspname(const char* name);
+strcut spwd* getspent(void);
+void setspent(void);
+void endspend(void);
+
+struct spwd{
+   char* sp_name;    // Login_name
+   char* sp_pwdp;    // Encrypted password
+
+   /*Remaining fields support 'password aging' an optional feature that forces user to regularly change password*/
+   long sp_lstchg;   // Time of password change
+   long sp_min;      // Min number of days between passwd change
+   long sp_max;      // Max number of days before change required
+   long sp_warn;     // Number of days beforehand user that user is warned
+   long sp_inact;    // Number of days after expiration that account is considered inactive
+   long sp_expires;  // Date when account expires 
+   unsigned long sp_flag;  // REserved for future use
+};
+
+Unix used one-way encryption algorithm.
+
+char* crypt(const char* key, const char* salt); // Returns pointer to statistically allocated string containing encrypted password
+
+char* getpass(const char* prompt); // // Returns pointer to statistically allocated input password string
