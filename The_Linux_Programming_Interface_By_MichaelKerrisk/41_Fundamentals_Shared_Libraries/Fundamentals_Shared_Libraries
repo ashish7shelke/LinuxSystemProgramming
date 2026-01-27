@@ -1,0 +1,206 @@
+Shared libraries are a technique for placing libary functions into a single unit that can
+be shared by multiple processes at run time.
+
+*Object Libraries*
+------------------
+One way of building a program is simply to compile each of its source files to produce
+corresponding object files, then link all of these object files together to produce the
+executable program.
+
+Linking is actually performed by the separate linked program, ld.
+gcc invokes linker program indierctly.
+
+Maintaining these compilation and object files which are in different dirctories of the
+project, we could compile them once, and then link them into different executable as required.
+
+So we can group set of object files into single unit, known as an object file. 
+Object libraries are of two types
+a) Static and b) Shared
+
+*Static Libraries*
+------------------
+We can place set of commonly used object files into single library file that can then be 
+used to build multiple executables, without needing to recompile the original source files.
+
+Link commansds become simpler, instead listing a long series of the object files on the link
+command line, we specify just name of the static library. Linked knowns how to search and
+extract the objects required by the executable.
+
+*Creating and maintaining a static library
+
+Command 'ar': GNU ar program creates, modifies, and extracts from archives.
+An archieve is a single file holding a collection of other files in astructure that makes
+it possible to retrieve the original individual files.
+
+$ ar options archieve object-file...
+
+Creating static library for tlpi library files
+$   cc -g -c -Wno-attributes *.c
+$   ar libtlpi.a *.o 
+$   ar tv libtlpi.a
+
+Using Static library
+$   cc -g -c prog.c
+$   cc -g -o prog.o libtlpi.a
+$   cc -g -o prog prog.o -libtlpi   # It searches ../usr/lib folders
+$   cc -g -o prog prog-o -LmyLibDir -ltlpi # Search in directory as mentioned by -L option
+
+$ gcc -std=c11 01_Precess_credentials.c  -o a.out -L ../tlpi_lib/ -ltlpi 
+
+Disadvantages:
+When a program is built by linking against a static library, the resulting executable file
+includes copies of all the object files that were linked into the program.
+Ween several executable ues the same object modules, each executable has its own copy of
+the object modules.
+
+Disk space is wsted storing multiple copies of the same object modules
+If several different programs using the same modules are running at the same time, then each
+holds separate copies of the object modules in virtual memory, thus increasing overall
+virtual memory demands of the menory.
+
+If a change is reuired to an object module in a static librray, then all executables using
+the modules must be relinked in order to incorporate the change. So it needs to adminstrated
+which executables are using this modifed static library.
+
+
+* Shared Librraies*
+-------------------
+With shared libraries, single copy of the objec modules is shared by all programs requiring
+the modules. The object modules are not copied into executable. 
+
+Single copy of library is loaded into memory at run time.
+
+Although the code of shared library is shared among multiple processes, its variables are 
+not. Each process that uses the library has its own copies of the global and static variables
+that are defined within the library.
+
+So overall executable size is smaller.
+
+Since object modules are not copied into the executable files, changes in objects module
+without relinking program files.
+
+Disadvantages:
+Shared libraries must be compiled to use position-independent coe, which has performance
+overhead on most the architecture.
+Shared libraries are more complex at conceptual and creational level.
+Symbol relocation must be performed at run time. During symbol relocation, refrences to each symbol
+in a shared library need to be modified to correspond to actual run-time location at which
+symbol is placed in virtual memory. So this symbol relocation takes more time to execute the
+program than use of static library.
+
+*Crating and usign shared library*
+----------------------------------
+ELF - Executable and Linking Format
+
+$   gcc -g -c -fPIC -Wall *.c
+$   gcc -g -shared -o libshared.so *.o
+$   gcc -g -fPIC -Wall *.c -shared -o libshared.so
+
+-fPIC -> Option specifeis the compiler should generate position-indendent code.
+This changes the way the compiler generate the code for operations such as accessing global,
+static and external variables; accessing string addresses; addresses of functions.
+This allows the code to be located at any virtaul address at run-time.
+This is necessary for shared library, since there is no way of knowing at link time where the 
+shared library code will be located in memory.
+
+On linux x86-32, it is possible to create a shared library using the mmodules compiled
+without -fPIC. Since pages of program text containing position-dependent memory refrences
+are not shared across processes. On the same architecture, it is impossible to link shared
+library without -fPIC option. If linked with -fPIC _GLOBAL_OFFSET_TABLE_ flag is present in
+object file.
+
+$   nm *.o | grep _GLOBAL_OFFSET_TABLE_
+$   readelf -s *.o | grep _GLOBAL_OFFSET_TABLE_
+
+If following commnds yeilds sme output, there atleast one object file is compiled without -fPIC
+$   objdump --all-headers libtlpi.so | grep TEXTREL 
+$   readelf -d libtlpi.so | grep TEXTREL
+
+TEXTREL -> indiactes that text segment of some module contains refrence that requires run-time
+reallocation.
+
+*Using a share dlibrary
+Since the execuatble file no longer contains copies of the object files that it requires, it
+must have some mechanism for identifying the shared library that it needs at run time.
+This is done by embedding the name of shared library inside the executable during the link
+phase. In ELF, the library dependency is recorded in a DT_NEEDED tag in the executable.
+The list of all of a program's shared librry dependencies is reffred as its dynamic dependency
+list
+
+At run-time, there must be some mechanism for resolving the embedded library name, for finding
+the sahred library file correspponding to the name specified in the executable file- and then
+loading the library into memory, if not already present.
+
+Dynamic linking: It resolves embedded library name at run time. This task is performed by the
+dynamic linker. Dynamic linker is itself a shared library named as /lib/ld-linux.so.2
+
+Dynamic linker examines the list of shared libraries required by a program and uses a set of 
+predfined rules in order to find the library files in the file systems.
+Mostly standard libraries are stored in /lib or /usr/lib.
+
+* LD_LIBRARY_PATH environment variable:
+One way of informing dynamic linker that a shared library resides in a non-standard directory
+is to specify that directory as part of a conon-separeted list of directories in LD_LIBRARY_PATH.
+
+$   LD_LIBRARY_PATH = nonstandard_libray_path
+
+* The Shared Library Soname
+If library has a soname (alias), then during static linking, the soname is embedded in the
+executable file instead of the real name, and subsequently used by dynamic linker when searching
+for the library at run-time.
+
+$   gcc -g -c -fPIC -Wall *.c
+$   gcc -g -shared -Wl,-soname,libbar.so -o libfoo.so *.o
+$   gcc -g -fPIC -Wall *.c -shared -Wl,-soname,libbar.so -o libshared.so
+
+$ gcc -g -wall -o prog prog.c libfoo.so --> if linker detects soname then its embedded in executable
+
+    libfoo.so
+     -----------------------
+    |   ELF header          |
+    |   soname = libabr.so  |
+     -----------------------
+    |   other info          |
+    |   *.o code            |
+     -----------------------
+    
+* Tools for working with shared libraries
+$   ldd prog        # List Dynamic Dependencies
+$   objdump *.so    # To obtain various information-disassembled binary machine code     
+$   readelf *.so    # 
+$   nm              # list the set of symbols defined within an object library or executable
+                    # 
+
+* Shared Library verisions and naming Conventions
+
+Real name       :   libname.so.major-id.minor-id
+    ^
+    |
+Soname          :   libname.so.major-id
+    ^
+    |
+Linker name     :   libname.so   
+
+* Installing shared libraries
+
+/usr/lib        ->  Standard libraries
+/lib            ->  libraries required suring system startup should be installed
+/usr/local/lib  ->  Nonstandard libraries
+
+    ldconfig()
+    -   Shared libraries can reside in a variety of directories. Dynamic linker needed to 
+    search all of these directories in order to find a library. So laoding library is slow
+    -   New verison of libraries are installed or old versions are removed, the soname
+    symbolic links may become out of data.
+
+    ldconfig program resolves above issues:
+    It searches a standard set of directories and creates or updates a cache file
+    /rtc/ls.so.cache, to contain a list of the major libary versions in all these directories.
+
+
+* Resolving symbols at run-time
+
+Mainly global synbols may conflict. As applcaition and libraris can have same global
+function signatures or varaibles.
+In this case immediated global function is consdiered.
+
