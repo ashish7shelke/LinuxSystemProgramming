@@ -62,4 +62,5 @@ int main(int argc, char *argv[])
 }
 /*
 gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-attributes -Wno-format-truncation  -pedantic -I../tlpi_lib 01_Precess_credentials.c ../tlpi_lib/ugid_functions.c ../tlpi_lib/error_functions.c ../tlpi_lib/get_num.c -pthread -o 01_Process_credentials
+gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-attributes -Wno-format-truncation  -pedantic 01_Precess_credentials.c  -o a.out -L ../tlpi_lib/ -ltlpi 
 */

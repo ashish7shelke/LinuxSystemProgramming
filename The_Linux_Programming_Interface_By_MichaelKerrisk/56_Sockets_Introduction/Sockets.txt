@@ -1,4 +1,4 @@
-Clien-server scenario, aplication communicate using sockets as follows:
+Client-server scenario, aplication communicate using sockets as follows:
 1) Each application creates a socket. A socket is apparatus that follows communication, and both application 
 requires one.
 2) The server binds its socket to well-known address so that clients can locate it.
@@ -33,7 +33,7 @@ Modern operating systems supports following domains:
         Address structure:                  socketaddr_in6
 
 Socket Type:
-    Every socket implementatio provides at least two types of sockets: stream and datagram.
+    Every socket implementation provides at least two types of sockets: stream and datagram.
 
     Stream Socket Types:    Reliable delivery:              Y    
     (SOCK_STREAM)           Message boundaries preserved:   N
@@ -68,7 +68,7 @@ Socket system calls:
     known address so that clients can locate the socket.
     listen() -> Stram socket to accept incoming connection from other sockets
     accept() -> accepts a connection from peer applicationon a listening stram socket and optionally returns
-    address of peer cosket.
+    address of peer socket.
     connect() -> Establish a connection with another socket
 
 Creating a Socket: socket()
@@ -92,7 +92,7 @@ Generic socket address structure: strcut sockaddr
 
 Stream Sockets:
 ______________
-1) The socket() system call, creates a socket. Two applicaitons to communicate, each must them must 
+1) The socket() system call, creates a socket. Two applicaitons to communicate, each one of them must 
     create a socket.
 2) Communication via a stream socket is analogous to a telephone call.
     One application must connect its socket to another application's socket before communication can
@@ -194,11 +194,11 @@ The listening socket remains open and can be used to accept further connection. 
 creates one listening socket, binds it to well-known address, and handles all client requests by accpeting
 connections via listening socket.
 
-socketaddr* addr -> points to structure that is used to return the socket address. sstructure deppends on 
+socketaddr* addr -> points to structure that is used to return the socket address. structure deppends on 
 type of domain.
-addlen -> Points to integer that updated weth size of buffer pointed to by addr.
+addlen -> Points to integer that updated with size of buffer pointed to by addr.
 
-*Connecting to Peer cokst: connect()*
+*Connecting to Peer socket: connect()*
 #include <sys/socket.h>
 int connect(int socketfd, const struct socketaddr *addr, socklen_t addrlen);
         // Returns 0 on success, or -1 on error
@@ -278,6 +278,6 @@ Unconnected datagram socket
 
 After datagram socket has been connected:
 Datagram can be sent through the socket using write() and are automatically sent to same peer socket
-Only datagrams sent by peer socket may b eread on the socket.
+Only datagrams sent by peer socket may be read on the socket.
 
 When we connect sockets using connecT(), simpler I/O system calls can be used.

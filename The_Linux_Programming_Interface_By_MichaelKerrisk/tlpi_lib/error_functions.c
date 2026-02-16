@@ -34,7 +34,7 @@ static void outputError(Boolean useErr, int err, Boolean flushStdout, const char
     else
       snprintf(errText, BUF_SIZE, ":");
     
-    snprintf(buf, BUF_SIZE, "ERROR %s %s\n", errText, userMsg);
+    snprintf(buf, 3*BUF_SIZE, "ERROR %s %s\n", errText, userMsg);
     
     if(flushStdout)
       fflush(stdout); //flush any pending stdout
@@ -58,7 +58,7 @@ void errMsg(const char *format, ...)
   errno = savedErrno;
 }
 
-void errExit(const char *format, ...)
+void errExit(const char *format, ...) 
 {
   va_list argList;
   
